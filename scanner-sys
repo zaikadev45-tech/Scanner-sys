@@ -1,0 +1,58 @@
+#!/system/bin/bash
+
+# Variáveis
+port=1
+input=""
+TopPort=(21 22 23 25 53 80 110 111 135 139 143 443 445 3306 3389 5432 5555 5900 8080)
+
+echo "[#] Scan System [=]"
+echo " |"
+echo "[1] Verificar 1000 Portas"
+echo "[2] Verificar Portas sensíveis";
+
+read -p "[+] opção: " input
+
+case $input in
+    1)
+        while [ $port -le 1000 ]; do
+            timeout 2 curl -s -o /dev/null 127.0.0.1:$port
+
+            CODIGO=$?
+            case $CODIGO in
+                 7)
+                    echo "[-] Porta: $port: fechada"
+                    ;;
+               124)
+                    echo "[?] Porta: $port: timeout (filtrada)"
+                    ;;
+                 *)
+                    echo "[!]  -  Porta $port: ABERTA  -  [!]"
+                    ;;
+            esac
+            
+            port=$((port + 1))
+        done
+        ;;
+    2)
+	for porta in "${TopPort[@]}"; do
+		timeout 2 curl -s -o /dev/null 127.0.0.1:$porta;
+		CODIGO=$?
+
+		# echo "$?" usei para test
+		case $CODIGO in
+		     7)
+			echo "[-] Porta $porta: fechada"
+			;;
+		  124)
+			echo "[=] Porta $porta: timeout (filtrada)"
+			;;
+		    *)
+			echo "[!]  -  Porta $porta: ABERTA  -  [!]"
+		esac
+	done
+	;;
+    *)
+	echo "[!] Opção inválida"
+	;;
+esac
+
